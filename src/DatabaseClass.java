@@ -99,6 +99,12 @@ public class DatabaseClass {
 		return false;
 	}
 	
+	static String[] get_locations()
+	{
+		String[] s = {"Shahbagh", "Malibagh", "Motijheel"};
+		return s;
+	}
+	
 	static boolean User_Exists(String usr)
 	{
 		Statement stmt;
@@ -143,6 +149,12 @@ public class DatabaseClass {
 		}
 		return rs;
 	}*/
+	/**
+	 * 
+	 * @param password
+	 * @return
+	 */
+
 	static void closeDB()
 	{
 		try {

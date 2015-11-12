@@ -35,6 +35,13 @@ public class ServerDialog extends JDialog {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		//connect to database
+		if (DatabaseClass.ConnectDB() == true)
+			lblDatabase.setText("Database is Online");
+		else
+			lblDatabase.setText("Database could not be connected");
+		
+		//connect to server
 		try {
             serverSocket = new ServerSocket(portNumber);
         } catch (IOException e) {
@@ -42,11 +49,7 @@ public class ServerDialog extends JDialog {
         }
 		System.out.println("Server is connected");
 		
-		if (DatabaseClass.ConnectDB() == true)
-			lblDatabase.setText("Database is Online");
-		else
-			lblDatabase.setText("Database could not be connected");
-		
+		//listen to port
 		while (true) {
             try {
                 socket = serverSocket.accept();
@@ -134,6 +137,17 @@ public class ServerDialog extends JDialog {
 	                		success = "0";
 	                	out.println("SIGNUP");
 	                	out.println(success);
+	                }
+	                else if (line.equals(ConnectionClass.LOCATION_LIST))
+	                {
+	                	String[] s = DatabaseClass.get_locations();
+	                	System.out.println("go location req, total " + s.length);
+	                	out.println(ConnectionClass.LOCATION_LIST);
+	                	out.println(s.length);
+	                	for (int i = 0; i<s.length; i++)
+	                	{
+	                		out.println(s[i]);
+	                	}
 	                }
 	                
 	            } catch (IOException e) {
