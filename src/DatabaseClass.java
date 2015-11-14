@@ -24,7 +24,7 @@ public class DatabaseClass {
 		try 
 		{
 			connection = DriverManager.getConnection(url, username, password);
-			System.out.println("Database connected!");
+			//System.out.println("Database connected!");
 			if (connection.isClosed())
 				return false;
 			else
@@ -32,7 +32,9 @@ public class DatabaseClass {
 		}
 		catch (SQLException e)
 		{
-			throw new IllegalStateException("Cannot connect the database!", e);
+			//throw new IllegalStateException("Cannot connect the database!", e);
+			//System.out.println("Cannot connect to the database!");
+			return false;
 		}
 		
 		
@@ -41,10 +43,11 @@ public class DatabaseClass {
 	/**
 	 * Create a new user account
 	 **/
-	static boolean New_cred(String usr, String pass)
+	static boolean New_cred(String usr, String pass1)
 	{
 		Statement stmt;
 		ResultSet rs;
+		String pass = PasswordSecurity.Encrypt(pass1);
 		String col_name = "INSERT_USER('"+usr+"', '"+pass+"')";
 		String query = "Select "+ col_name;
 		//rs = ParseQ(query);
@@ -71,10 +74,11 @@ public class DatabaseClass {
 	/**
 	 * Check if username and password is valid
 	 **/
-	static boolean Check_cred(String usr, String pass)
+	static boolean Check_cred(String usr, String pass1)
 	{
 		Statement stmt;
 		ResultSet rs;
+		String pass = PasswordSecurity.Encrypt(pass1);
 		String col_name = "VERIFY_DATA('"+usr+"', '"+pass+"')";
 		String query = "Select "+ col_name;
 		//rs = ParseQ(query);
@@ -157,11 +161,18 @@ public class DatabaseClass {
 
 	static void closeDB()
 	{
+		if (connection == null) return;
 		try {
 			if (connection.isClosed()) return;	
 			connection.close();
-			System.out.println("Database closed!");
-		} catch (SQLException e) {
+			//System.out.println("Database closed!");
+		} 
+		catch (NullPointerException e1)
+		{
+			//connection is not even established
+			return;
+		}
+		catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

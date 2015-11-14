@@ -1,6 +1,4 @@
 
-import java.awt.EventQueue;
-
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import java.awt.Font;
@@ -12,18 +10,28 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 
 public class ServerDialog extends JDialog {
-	static JLabel lblDatabase = new JLabel("Database");
+	/**
+	 * 
+	 */
+	
+	private static final long serialVersionUID = 1L;
+	
+	static JLabel lblDatabase = new JLabel("Connecting to Database...");
 	static JLabel lblPhone = new JLabel("0 phone(s) are connected");
 	static ServerDialog dialog = new ServerDialog();
-	
+	static JCheckBox chckbxAlwaysOnTop;
 	static Map<String, PrintWriter> client_out = new HashMap<String, PrintWriter>();
 	static int portNumber = 8088;
 	static ServerSocket serverSocket = null;
     static Socket socket = null;
-    
+    static int connected_phone_count = 0;
     
 	
     public static void main(String[] args) {
@@ -37,9 +45,16 @@ public class ServerDialog extends JDialog {
 		}
 		//connect to database
 		if (DatabaseClass.ConnectDB() == true)
+		{
 			lblDatabase.setText("Database is Online");
+			lblDatabase.setIcon(new ImageIcon(ServerDialog.class.getResource("data_ok.png")));
+		}
 		else
+		{
 			lblDatabase.setText("Database could not be connected");
+			lblDatabase.setIcon(new ImageIcon(ServerDialog.class.getResource("Warning.png")));
+		}
+			
 		
 		//connect to server
 		try {
@@ -47,13 +62,14 @@ public class ServerDialog extends JDialog {
         } catch (IOException e) {
             e.printStackTrace();
         }
-		System.out.println("Server is connected");
+		//System.out.println("Server is connected");
 		
 		//listen to port
 		while (true) {
             try {
                 socket = serverSocket.accept();
-                lblPhone.setText("Phone is connected");
+                connected_phone_count++;
+                lblPhone.setText(String.valueOf(connected_phone_count) +  " Phone(s) are connected");
             } catch (IOException e) {
                 System.out.println("I/O error: " + e);
             }
@@ -104,10 +120,10 @@ public class ServerDialog extends JDialog {
 	            return;
 	        }
 	        String line;
-	        String ID = null;
+	        //String ID = null;
 	        while (true) {
 	            try {
-	                line = in.readLine();
+	            	line = in.readLine();
 	                
 	                if (line.equals(ConnectionClass.LOGIN_SQ))
 	                {
@@ -141,7 +157,7 @@ public class ServerDialog extends JDialog {
 	                else if (line.equals(ConnectionClass.LOCATION_LIST))
 	                {
 	                	String[] s = DatabaseClass.get_locations();
-	                	System.out.println("go location req, total " + s.length);
+	                	//System.out.println("go location req, total " + s.length);
 	                	out.println(ConnectionClass.LOCATION_LIST);
 	                	out.println(s.length);
 	                	for (int i = 0; i<s.length; i++)
@@ -150,10 +166,36 @@ public class ServerDialog extends JDialog {
 	                	}
 	                }
 	                
-	            } catch (IOException e) {
-	            	System.out.println("Client Terminated");
-	                return;
+	            } 
+	            catch (NullPointerException e1)
+	            {
+	            	//System.out.println("Client Terminated in Nullpointer.");
+	            	try {
+	            		out.close();
+						in.close();
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
+	            	connected_phone_count--;
+	                lblPhone.setText(String.valueOf(connected_phone_count) +  " Phone(s) are connected");
+	            	break;
 	            }
+	            catch (IOException e) {
+	            	//System.out.println("Client Terminated in IOException.");
+	            	try {
+	            		out.close();
+						in.close();
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
+	            	connected_phone_count--;
+	                lblPhone.setText(String.valueOf(connected_phone_count) +  " Phone(s) are connected");
+	            	break;
+	                //return;
+	            }
+	            
 	        }
 	    }
 	}
@@ -161,33 +203,48 @@ public class ServerDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public ServerDialog() {
+		setAlwaysOnTop(true);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setTitle("Server Manager and Communicator");
 		setResizable(false);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 400, 250);
 		getContentPane().setLayout(null);
 		
-		JLabel lblOnline = new JLabel("Connection Socket is open at 8088");
+		JLabel lblOnline = new JLabel("Connection Socket is open at port: 8088");
 		lblOnline.setFont(new Font("Tahoma", Font.BOLD, 12));
-		lblOnline.setBounds(62, 55, 221, 14);
+		lblOnline.setBounds(26, 25, 372, 14);
 		getContentPane().add(lblOnline);
 		
+		lblDatabase.setIcon(new ImageIcon(ServerDialog.class.getResource("connecting.png")));
+		lblPhone.setIcon(new ImageIcon(ServerDialog.class.getResource("android.png")));
 		
-		lblDatabase.setBounds(62, 80, 221, 14);
+		lblDatabase.setBounds(37, 50, 372, 23);
 		getContentPane().add(lblDatabase);
 		
 		JButton btnExit = new JButton("Exit");
 		btnExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//DatabaseClass.closeDB();
+				DatabaseClass.closeDB();
+				
 				System.exit(1);
 			}
 		});
-		btnExit.setBounds(345, 240, 89, 23);
+		btnExit.setBounds(295, 190, 89, 23);
 		getContentPane().add(btnExit);
 		
 		
-		lblPhone.setBounds(62, 105, 160, 14);
+		lblPhone.setBounds(36, 72, 373, 23);
 		getContentPane().add(lblPhone);
+		
+		chckbxAlwaysOnTop = new JCheckBox("Always on top");
+		chckbxAlwaysOnTop.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				setAlwaysOnTop(chckbxAlwaysOnTop.isSelected());
+			}
+		});
+		chckbxAlwaysOnTop.setSelected(true);
+		chckbxAlwaysOnTop.setBounds(6, 190, 204, 23);
+		getContentPane().add(chckbxAlwaysOnTop);
 
 	}
 }
