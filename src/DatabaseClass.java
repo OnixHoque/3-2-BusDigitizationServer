@@ -1,5 +1,9 @@
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 public class DatabaseClass {
 	
@@ -102,10 +106,62 @@ public class DatabaseClass {
 		}
 		return false;
 	}
-	
+	static Queue<String> get_routes(String start, String end)
+	{
+		Queue<String> Q = new LinkedList<String>();
+		
+		Statement stmt;
+		ResultSet rs;
+		String query = "CALL FIND_BUS('"+start+"','"+end+"');";
+		try {
+			stmt = connection.createStatement();
+			rs = stmt.executeQuery(query);
+			
+			while (rs.next())
+		      {
+		        /*String busName = rs.getString("BUSNAME");
+		        String rating = rs.getString("RATING");
+		        String time = rs.getString("TIM");
+		        String distance = rs.getString("DISTANCE");
+		        String price = rs.getString("PRICE");
+		        String hazard = "0";*/
+				Q.add(rs.getString("BUSNAME"));
+				Q.add(rs.getString("RATING"));
+				Q.add("10");//Q.add(rs.getString("TIM"));
+				Q.add(rs.getString("DISTANCE"));
+				Q.add(rs.getString("PRICE"));
+				Q.add("1");
+		        //System.out.println(busName + " "+ rating + " "+ time + " "+ distance + " "+ price + " "+ hazard);
+		      }
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println("Count " + Q.size()/6);
+		return Q;
+	}
 	static String[] get_locations()
 	{
-		String[] s = {"Shahbagh", "Malibagh", "Motijheel"};
+		List<String> loc_list = new ArrayList<String>();
+		Statement stmt;
+		ResultSet rs;
+		String query = "Select NAME from junction;";
+		try {
+			stmt = connection.createStatement();
+			rs = stmt.executeQuery(query);
+			while (rs.next())
+		      {
+		        String output = rs.getString("NAME");
+		        if (output.length() != 0) loc_list.add(output);
+		      }
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		String[] s = loc_list.toArray(new String[0]);
 		return s;
 	}
 	

@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
@@ -54,8 +55,9 @@ public class ServerDialog extends JDialog {
 			lblDatabase.setText("Database could not be connected");
 			lblDatabase.setIcon(new ImageIcon(ServerDialog.class.getResource("Warning.png")));
 		}
-			
-		
+		//DatabaseClass.get_locations();
+		//Queue<String> Q = DatabaseClass.get_routes("azimpur", "science lab");
+		//System.out.println(Q.size()/6);
 		//connect to server
 		try {
             serverSocket = new ServerSocket(portNumber);
@@ -165,6 +167,22 @@ public class ServerDialog extends JDialog {
 	                		out.println(s[i]);
 	                	}
 	                }
+	                else if (line.equals(ConnectionClass.ROUTE_RESULT))
+	                {
+	                	String src = in.readLine();
+	                	String dest = in.readLine();
+	                	Queue<String> Q = DatabaseClass.get_routes(src, dest);
+	                	
+	                	int len = Q.size()/6;
+	                	
+	                	out.println(ConnectionClass.ROUTE_RESULT);
+	                	out.println(len);
+	                	for (int i = 0; i<len; i++)
+	                	{
+	                		for (int j = 1;j <=6; j++)
+	                			out.println(Q.remove());
+	                	}
+	                }
 	                
 	            } 
 	            catch (NullPointerException e1)
@@ -225,7 +243,6 @@ public class ServerDialog extends JDialog {
 		btnExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				DatabaseClass.closeDB();
-				
 				System.exit(1);
 			}
 		});

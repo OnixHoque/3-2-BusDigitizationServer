@@ -16,6 +16,23 @@ public class ConnectionClass {
      * 
      **/
     public static String LOCATION_LIST = "LOCATIONS";
+    /**
+     * When the command is read, the response is in this order this:
+     * <br>
+     * <br>ROUTE_RESULTS
+     * <br>No. of Results
+     * <br>bus_service_1
+     * <br>rating_1
+     * <br>time_1
+     * <br>distance_1
+     * <br>price_1
+     * <br>hazard_count_1
+     * <br>.
+     * <br>.
+     * <br>locationN
+     * 
+     **/
+    public static String ROUTE_RESULT = "ROUTE_RESULTS";
     
 }
 
